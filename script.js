@@ -5,10 +5,10 @@ function addFood() {
   const kcal = Number(document.getElementById("kcal").value);
 
   if (!name || kcal <= 0)
-    {
-      alert("nesprávný název nebo hodnota jídla")
-      return;
-    }    
+  {
+    alert("nesprávný název nebo hodnota jídla")
+    return;
+  }    
   total += kcal;
 
   const li = document.createElement("li");
@@ -22,11 +22,31 @@ function addFood() {
 
 function getToday()
 {
-  return new Date().toISOString().split("T")[0];  //"2026-01-19T13:37:12.345Z".split("T") >>
-                                                  //"2026-01-19",
-                                                  //"13:37:12.345Z"
-                                                  //[0] = 1. položka z pole(datum)
-
+  return new Date().toISOString().split("T")[0];
 }
-let todaysDate = getToday();
-document.getElementById("todaysDate").textContent =todaysDate;
+
+function updateDateDisplay() 
+{
+  document.getElementById("curentDay").textContent = date;
+}
+
+let date = getToday();
+updateDateDisplay();
+
+//"2026-01-19T13:37:12.345Z".split("T") >>
+//"2026-01-19",
+//"13:37:12.345Z"
+//[0] = 1. položka z pole(datum)
+
+
+function dayShift(offset) 
+{
+  const dateShift = new Date(date);
+  dateShift.setDate(dateShift.getDate() + offset);
+  date = dateShift.toISOString().split("T")[0];
+  updateDateDisplay();
+}
+
+
+ 
+ 
