@@ -24,20 +24,14 @@ function getToday()
 {
   return new Date().toISOString().split("T")[0];
 }
+let date = getToday(); //v date je uložen dnešní datum ve formátu RRRR-MM-DD
 
 function updateDateDisplay() 
 {
   document.getElementById("curentDay").textContent = date;
 }
 
-let date = getToday();
-updateDateDisplay();
-
-//"2026-01-19T13:37:12.345Z".split("T") >>
-//"2026-01-19",
-//"13:37:12.345Z"
-//[0] = 1. položka z pole(datum)
-
+updateDateDisplay(); //nastaví hodnotu datumu na dnešní datum
 
 function dayShift(offset) 
 {
