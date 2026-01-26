@@ -1,4 +1,4 @@
-let days = {};
+let days = {};//objekt pro uložení dat v jednotlivých dnech, bude pojmenovám klíčem(datumem)
 
 let total = 0;
 
@@ -8,42 +8,43 @@ function addFood()
   const kcal = Number(document.getElementById("kcal").value);
 
   if (!name || kcal <= 0)
-  {
-    alert("nesprávný název nebo hodnota jídla")
-    return;
-  }    
+    {
+      alert("nesprávný název nebo hodnota jídla")
+      return;
+    }    
   
 
-if (!days[date]) 
-  {
-    days[date] = { foods: [] };
+  if (!days[date]) //pokud neexistuje den v objektu days
+    {
+      days[date] = { foods: [] }; //vytvoří se nový den s prázdným polem foods
+    } 
+  days[date].foods.push({ name, kcal });
 
-    days[date].foods.push({ name, kcal });
+  renderDay();
 
-    renderDay();
-  }
   document.getElementById("food").value = "";//čístí input boxy
   document.getElementById("kcal").value = "";
   
 }
+
 function renderDay()
 {
-const list = document.getElementById("list");//celej ten list, výpis toho
-list.innerHTML = "";//vyčistí se
+  const list = document.getElementById("list");//celej ten list, výpis toho
+  list.innerHTML = "";//vyčistí se
 
-total = 0;
+  total = 0;
 
-if (days[date] && days[date].foods.length > 0) { //pokud existuje den a má aspoň jedno jídlo
-days[date].foods.forEach(food => //pro každý prvek v poli foods které připadá každému dni
-      { const li = document.createElement("li");//nový html element li
-      li.textContent = `${food.name} - ${food.kcal} kcal`;
-      list.appendChild(li);
-      total += food.kcal;
-      }
-    );
+  if (days[date] && days[date].foods.length > 0) { //pokud existuje den a má aspoň jedno jídlo
+  days[date].foods.forEach(food => //pro každý prvek v poli foods které připadá každému dni
+        { const li = document.createElement("li");//nový html element li
+        li.textContent = `${food.name} - ${food.kcal} kcal`;
+        list.appendChild(li);
+        total += food.kcal;
+        }
+      );
 
-}
-document.getElementById("total").textContent = total;
+  }
+  document.getElementById("total").textContent = total;
 }
 
 
