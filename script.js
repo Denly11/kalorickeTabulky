@@ -12,16 +12,38 @@ function addFood()
     alert("nesprávný název nebo hodnota jídla")
     return;
   }    
-  total += kcal;
+  
 
-  const li = document.createElement("li");
-  li.textContent = name + " - " + kcal + " kcal";
+if (!days[date]) 
+  {
+    days[date] = { foods: [] };
 
-  document.getElementById("list").appendChild(li);
-  document.getElementById("total").textContent = total;
+    days[date].foods.push({ name, kcal });
 
-  document.getElementById("food").value = "";
+    renderDay();
+  }
+  document.getElementById("food").value = "";//čístí input boxy
   document.getElementById("kcal").value = "";
+  
+}
+function renderDay()
+{
+const list = document.getElementById("list");//celej ten list, výpis toho
+list.innerHTML = "";//vyčistí se
+
+total = 0;
+
+if (days[date] && days[date].foods.length > 0) { //pokud existuje den a má aspoň jedno jídlo
+days[date].foods.forEach(food => //pro každý prvek v poli foods které připadá každému dni
+      { const li = document.createElement("li");//nový html element li
+      li.textContent = `${food.name} - ${food.kcal} kcal`;
+      list.appendChild(li);
+      total += food.kcal;
+      }
+    );
+
+}
+document.getElementById("total").textContent = total;
 }
 
 
@@ -46,8 +68,8 @@ function dayShift(offset)
   dateShift.setDate(dateShift.getDate() + offset);
   date = dateShift.toISOString().split("T")[0];
   updateDateDisplay();
+  renderDay();
 }
 
 
- 
  
