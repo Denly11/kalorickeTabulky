@@ -1,5 +1,7 @@
 let days = {};//objekt pro uložení dat v jednotlivých dnech, bude pojmenovám klíčem(datumem)
 
+loadDays();
+
 let total = 0;
 
 function addFood() 
@@ -20,6 +22,7 @@ function addFood()
     } 
   days[date].foods.push({ name, kcal });
 
+  saveDays();
   renderDay();
 
   document.getElementById("food").value = "";//čístí input boxy
@@ -56,6 +59,9 @@ function getToday()
 
 let date = getToday(); //v date je uložen dnešní datum ve formátu RRRR-MM-DD
 
+updateDateDisplay();
+renderDay();
+
 function updateDateDisplay() 
 {
   document.getElementById("curentDay").textContent = date;
@@ -72,5 +78,16 @@ function dayShift(offset)
   renderDay();
 }
 
-
+function saveDays()
+{
+  localStorage.setItem("days", JSON.stringify(days));
+}
  
+function loadDays()
+{
+  const saved = localStorage.getItem("days");
+  if (saved)
+  {
+    days = JSON.parse(saved);
+  }
+}
