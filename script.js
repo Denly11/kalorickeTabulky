@@ -34,22 +34,37 @@ function renderDay()
 {
   const list = document.getElementById("list");//celej ten list, výpis toho
   list.innerHTML = "";//vyčistí se
-
   total = 0;
 
-  if (days[date] && days[date].foods.length > 0) { //pokud existuje den a má aspoň jedno jídlo
-  days[date].foods.forEach(food => //pro každý prvek v poli foods které připadá každému dni
-        { const li = document.createElement("li");//nový html element li
-        li.textContent = `${food.name} - ${food.kcal} kcal`;
-        list.appendChild(li);
-        total += food.kcal;
+  if (days[date] && days[date].foods.length > 0) //pokud existuje den a má aspoň jedno jídlo
+  { 
+    days[date].foods.forEach((food, index) => //pro každý prvek v poli foods které připadá každému dni, díky index je kařdému jídlu přiřazen index
+        { 
+          const li = document.createElement("li");//nový html element li
+          li.textContent = `${food.name} - ${food.kcal} kcal`;
+          
+          const btn = document.createElement("button");//tlačítko pro smazání
+          btn.textContent = "❌";
+          btn.onclick = function()
+           {
+            removeFood(index);
+           }
+
+          li.appendChild(btn);//přidá tlačítko do li
+          list.appendChild(li);
+          total += food.kcal;
         }
       );
-
   }
   document.getElementById("total").textContent = total;
 }
 
+function removeFood(index)
+{
+  days[date].foods.splice(index, 1); //odstraní jídlo na daném indexu
+  saveDays();
+  renderDay();
+}
 
 
 function getToday()
