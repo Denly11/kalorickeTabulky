@@ -4,6 +4,8 @@ loadDays();
 
 let total = 0;
 
+let editIndex = null; //proměnná pro sledování indexu jídla, které se upravuje
+
 function addFood() 
 {
   const name = document.getElementById("food").value;
@@ -20,7 +22,17 @@ function addFood()
     {
       days[date] = { foods: [] }; //vytvoří se nový den s prázdným polem foods
     } 
-  days[date].foods.push({ name, kcal });
+ 
+
+  if (editIndex !== null) //pokud je editIndex nastavený, upravíme existující jídlo
+  {
+    days[date].foods[editIndex] = { name, kcal };
+    editIndex = null; //resetujeme editIndex po úpravě
+  }
+  else //jinak přidáme nové jídlo
+  {
+    days[date].foods.push({ name, kcal });
+  }
 
   saveDays();
   renderDay();
@@ -43,14 +55,22 @@ function renderDay()
           const li = document.createElement("li");//nový html element li
           li.textContent = `${food.name} - ${food.kcal} kcal`;
           
-          const btn = document.createElement("button");//tlačítko pro smazání
-          btn.textContent = "❌";
-          btn.onclick = function()
+          const btnRemove = document.createElement("button");//tlačítko pro smazání
+          btnRemove.textContent = "❌";
+          btnRemove.onclick = function()
            {
             removeFood(index);
            }
 
-          li.appendChild(btn);//přidá tlačítko do li
+          const btnEdit = document.createElement("button");//tlačítko pro úpravu
+          btnEdit.textContent = "✏️";
+          btnEdit.onclick = function()
+           {
+            editFood(index);
+           }
+
+          li.appendChild(btnEdit);//přidá tlačítko do li
+          li.appendChild(btnRemove);//přidá tlačítko do li
           list.appendChild(li);
           total += food.kcal;
         }
@@ -66,6 +86,15 @@ function removeFood(index)
   renderDay();
 }
 
+function editFood(index)
+{
+  const food = days[date].foods[index];
+
+  document.getElementById("food").value = food.name;
+  document.getElementById("kcal").value = food.kcal;
+
+  editIndex = index;
+}
 
 function getToday()
 {
