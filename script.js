@@ -118,6 +118,11 @@ function dayShift(offset)
   const dateShift = new Date(date);
   dateShift.setDate(dateShift.getDate() + offset);
   date = dateShift.toISOString().split("T")[0];
+
+  editIndex = null; //resetuje editIndex při změně dne
+  document.getElementById("food").value = "";
+  document.getElementById("kcal").value = "";
+
   updateDateDisplay();
   renderDay();
 }
