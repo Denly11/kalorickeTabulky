@@ -6,9 +6,15 @@ let total = 0;
 
 let editIndex = null; //proměnná pro sledování indexu jídla, které se upravuje
 
+//eventy
+addButton.addEventListener("click", addFood);
+btnPrevDay.addEventListener("click", () => dayShift(-1));
+btnNextDay.addEventListener("click", () => dayShift(1));
+
+
 function addFood() 
 {
-  const name = document.getElementById("food").value;
+  const name = document.getElementById("food").value.trim();//trim odstraní mezery na začátku a konci
   const kcal = Number(document.getElementById("kcal").value);
 
   if (!name || kcal <= 0)

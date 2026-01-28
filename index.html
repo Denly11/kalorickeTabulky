@@ -8,8 +8,8 @@
   <body>
     <h1>Kalorické tabulky</h1>
 
-    <button onclick="dayShift(-1)"> ← </button>
-    <button onclick="dayShift(1)"> → </button>
+    <button id="btnPrevDay"> ← </button>
+    <button id="btnNextDay"> → </button>
 
     <h2>dnešní datum datum: <span id="curentDay"> 1-1-1999 </span>  </h2>
 
@@ -18,12 +18,10 @@
     <div>
       <input id="food" placeholder="Jídlo">
       <input id="kcal" type="number" placeholder="Kalorie">
-      <button onclick="addFood()" >Přidat</button>
+      <button id="addButton">Přidat</button>
     </div>
 
     <ul id="list"></ul>
-
-
 
     <script src="script.js"></script>
   </body>
