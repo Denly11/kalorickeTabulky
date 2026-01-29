@@ -1,10 +1,12 @@
-let days = {};//objekt pro uložení dat v jednotlivých dnech, bude pojmenovám klíčem(datumem)
+// učím se s tím ok???!!!
+//let days = {};//objekt pro uložení dat v jednotlivých dnech, bude pojmenovám klíčem(datumem)
+//let když to je global ale když to je vyloženě ve funkci stačí const
 
-//let date = getToday(); //v date je uložen dnešní datum ve formátu RRRR-MM-DD
-
-loadDays();
+let days = {};
 
 let date = loadCurrentDay(); //načte aktuální den z localStorage nebo použije dnešní datum
+
+loadDays();
 
 let total = 0;
 
@@ -58,6 +60,7 @@ function addFood()
 
 function renderDay()
 {
+
   const list = document.getElementById("list");//celej ten list, výpis toho
   list.innerHTML = "";//vyčistí se
   total = 0;
