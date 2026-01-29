@@ -1,10 +1,18 @@
 let days = {};//objekt pro uložení dat v jednotlivých dnech, bude pojmenovám klíčem(datumem)
 
+//let date = getToday(); //v date je uložen dnešní datum ve formátu RRRR-MM-DD
+
 loadDays();
+
+let date = loadCurrentDay(); //načte aktuální den z localStorage nebo použije dnešní datum
 
 let total = 0;
 
 let editIndex = null; //proměnná pro sledování indexu jídla, které se upravuje
+
+updateDateDisplay();
+
+renderDay();
 
 //eventy
 addButton.addEventListener("click", addFood);
@@ -107,17 +115,14 @@ function getToday()
   return new Date().toISOString().split("T")[0];
 }
 
-let date = getToday(); //v date je uložen dnešní datum ve formátu RRRR-MM-DD
 
-updateDateDisplay();
-renderDay();
 
 function updateDateDisplay() 
 {
-  document.getElementById("curentDay").textContent = date;
+  document.getElementById("currentDay").textContent = date;
 }
 
-updateDateDisplay(); //nastaví hodnotu datumu na dnešní datum
+
 
 function dayShift(offset) 
 {
@@ -129,8 +134,20 @@ function dayShift(offset)
   document.getElementById("food").value = "";
   document.getElementById("kcal").value = "";
 
-  updateDateDisplay();
+  updateDateDisplay(); //nastaví hodnotu datumu na dnešní datum
   renderDay();
+  saveCurrentDay();
+}
+
+function saveCurrentDay()
+{
+  sessionStorage.setItem("currentDay", date);
+}
+
+function loadCurrentDay()
+{
+  const saved = sessionStorage.getItem("currentDay");
+  return saved ? saved : getToday();
 }
 
 function saveDays()
@@ -146,3 +163,5 @@ function loadDays()
     days = JSON.parse(saved);
   }
 }
+
+
