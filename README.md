@@ -33,16 +33,16 @@ Funkce
 
 ## Struktura projektu
 
-
+```
 kalorickeTabulky/
 ├── index.html                        # Frontend — hlavní stránka
 ├── script.js                         # Frontend logika (localStorage)
 ├── style.css                         # Styly
 └── kaloricke_tabulky_backend/
-    ├── app.py                        # Flask server, HTTP endpointy, potom +S
+    ├── app.py                        # Flask server, HTTP endpointy
     ├── database.py                   # Připojení k databázi
     └── models.py                     # ORM modely
-
+```
 
 ### Frontend
 Otevřít index přímo v prohlížeči. Frontend momentálně pracuje nezávisle na backendu (používá localStorage).
