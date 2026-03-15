@@ -37,7 +37,7 @@ Funkce
 kalorickeTabulky/
 ├── index.html                        # Frontend — hlavní stránka
 ├── script.js                         # Frontend logika (localStorage)
-├── style.css                         # Styly
+├── style.css                         # Zlepšení vzhledu
 └── kaloricke_tabulky_backend/
     ├── app.py                        # Flask server, HTTP endpointy
     ├── database.py                   # Připojení k databázi
