@@ -39,24 +39,26 @@ def get_foods():
     session = SessionLocal()
     try:
         foods = (#list
-            session.query(Food)#v session query na databazi 
+            session.query(Food)#v session query na databazi a vrátí mi to Food objekty + filtry
             .filter(Food.user_id == user_id, Food.date == target_date)# Food user id ==...,datum ==...
             .order_by(Food.id.asc())# seřad od nejmenšího id po nejvyšší
             .all()#spust a vykonej
-        )#SQLAlchemy objekt
+        )#SQLAlchemy objekt, python list vytvořený z db dat
 
-        foods_json = [#list pole
+        foods_json =[#list pole, tady vezmu data z foods a udělám z nich json friendly formát
             {
-                "id": food.id,
+                "id": food.id,#vytvoření klíče
                 "user_id": food.user_id,
                 "name": food.name,
                 "kcal": food.kcal,
                 "date": food.date.isoformat(),
             }
             for food in foods
-        ]#bere z toho foods ty položky a přvadí jejich infa do jsonu
+        ]   
+            #bere z toho foods ty položky a přvadí jejich infa do jsonu
+            #každý prvek ve foods je food, pro každou položku ve foods, každéé food je jedno jídlo...
 
-        # 5) Konzistentní odpověď
+        #odpověd
         return jsonify({"foods": foods_json, "count": len(foods_json)}), 200
 
     finally:
