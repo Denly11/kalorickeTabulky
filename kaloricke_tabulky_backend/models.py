@@ -1,3 +1,4 @@
+from datetime import date
 from sqlalchemy import Integer, String, Date, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base#z toho souboru
@@ -18,7 +19,7 @@ class Food(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    date: Mapped[Date] = mapped_column(nullable=False)
+    date: Mapped[date] = mapped_column(Date, nullable=False)
     name: Mapped[str] = mapped_column(String, nullable=False)
     kcal: Mapped[int] = mapped_column(nullable=False)
     #později další makra

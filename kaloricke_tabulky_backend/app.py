@@ -66,3 +66,57 @@ def get_foods():
 
 
 
+@app.delete("/foods/<int:food_id>")
+def delete_food(food_id):
+    session = SessionLocal()
+    try:
+        food = session.get(Food, food_id)#hledání v Food podle primárního klíče; pk lookup
+    
+        if not food:#pokud není, nenašlo se
+            return jsonify({"error": "Food not found"}), 404
+
+        session.delete(food)
+        session.commit()
+
+        return jsonify({"status": "ok", "deleted_food_id": food_id}), 200
+
+    except Exception:#obecná třída chyb, ne že by ses něco něnašlo, ale něco se rozhodně pokazilo
+        session.rollback()
+        return jsonify({"error": "Failed to delete food"}), 500
+
+    finally:
+        session.close()
+
+
+@app.post("/foods")
+def add_food():
+    data = request.json or {} # pokud tam nic nění dej to empty; bere to data z toh orequestu...překvapivě
+    user_id = data.get("user_id", 1)#pokud není, hodnota je 
+    name = data.get("name")
+    kcal = data.get("kcal")
+    date_str = data.get("date")
+
+    if not name or not kcal or not date_str:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()#text datumu převeden do .date
+    except ValueError:
+        return jsonify({"error": "Invalid date format, use YYYY-MM-DD"}), 400
+
+    session = SessionLocal()
+    try:
+        food = Food(user_id=user_id, name=name, kcal=kcal, date=target_date)
+        session.add(food)
+        session.commit()
+        return jsonify({"status": "ok", "food_id": food.id}), 201
+    except Exception:
+        session.rollback()
+        return jsonify({"error": "Failed to create food"}), 500
+    finally:
+        session.close()
+
+    
+
+
+
