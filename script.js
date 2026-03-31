@@ -4,17 +4,26 @@
 
 let days = {};
 
-let date = loadCurrentDay(); //načte aktuální den z localStorage nebo použije dnešní datum
+//let date = loadCurrentDay(); //načte aktuální den z localStorage nebo použije dnešní datum
+let date = loadCurrentDay();
 
-loadDays();
+
 
 let total = 0;
 
 let editIndex = null; //proměnná pro sledování indexu jídla, které se upravuje
 
+/*
 updateDateDisplay();
-
+loadDays();
 renderDay();
+*/
+//  tohle vše dohromady 
+//  v
+init();
+
+API_BASE = "http://localhost:5000"
+USER_ID = 1
 
 //eventy
 addButton.addEventListener("click", addFood);
@@ -126,7 +135,7 @@ function updateDateDisplay()
 }
 
 
-
+/*    --- OLD, na LOCALu ---
 function dayShift(offset) 
 {
   const dateShift = new Date(date);
@@ -140,7 +149,7 @@ function dayShift(offset)
   updateDateDisplay(); //nastaví hodnotu datumu na dnešní datum
   renderDay();
   saveCurrentDay();
-}
+}*/
 
 function saveCurrentDay()
 {
@@ -153,18 +162,75 @@ function loadCurrentDay()
   return saved ? saved : getToday();
 }
 
+/*
 function saveDays()
 {
   localStorage.setItem("days", JSON.stringify(days));
 }
- 
-function loadDays()
+ */
+
+/*function loadDays()
 {
   const saved = localStorage.getItem("days");
   if (saved)
   {
     days = JSON.parse(saved);
   }
+}*/
+
+
+async function loadFoodsForDate(targetDate)//vrací jídla pro daný den; async protože aplikace se už nespouští synchroně(load...() vše najednou)
+{
+  const response = await fetch(//počká než dostane fetch od backendu
+    `${API_BASE}/foods?date=${targetDate}&user_id=${USER_ID}`
+  );
+
+  if (!response.ok)
+  {
+    throw new Error("Nepovedlo se načíst jídla z API");
+  }
+
+  const data = await response.json();
+
+  days[targetDate] = {
+    foods: data.foods
+  };
+}
+
+/*
+async function loadDays()
+{
+  await loadFoodsForDate(date); 
+}
+*/
+async function dayShift(offset) 
+{
+  const dateShift = new Date(date);
+  dateShift.setDate(dateShift.getDate() + offset);
+  date = dateShift.toISOString().split("T")[0];
+
+  editIndex = null;
+  document.getElementById("food").value = "";
+  document.getElementById("kcal").value = "";
+
+  updateDateDisplay();
+  await loadFoodsForDate(date);//čekám na samotný datum...obv
+  renderDay();
+  saveCurrentDay();
 }
 
 
+async function init()
+{
+  try
+  {
+    updateDateDisplay();
+    await loadFoodsForDate(date);
+    rendarDay();
+  }
+  catch (error)
+  {
+    console.error(error);
+    alert("Nepovedlo se nacist jidla z BE")
+  }
+}
