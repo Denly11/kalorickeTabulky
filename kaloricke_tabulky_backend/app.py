@@ -88,6 +88,43 @@ def delete_food(food_id):
         session.close()
 
 
+@app.put("/foods/<int:food_id>")  #edit
+def edit_food(food_id):
+    data = request.json or {}
+    name = data.get("name")
+    kcal = data.get("kcal")
+    date_str = data.get("date")
+
+    if not name or not kcal or not date_str:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return jsonify({"error": "Invalid date format, use YYYY-MM-DD"}), 400
+
+    session = SessionLocal()
+    try:
+        food = session.get(Food, food_id)   #sqlalchemy request na db
+
+        if not food:
+            return jsonify({"error": "Food not found"}), 404
+
+        food.name = name
+        food.kcal = kcal
+        food.date = target_date
+        session.commit()
+
+        return jsonify({"status": "ok", "food_id": food.id}), 200
+
+    except Exception:
+        session.rollback()
+        return jsonify({"error": "Failed to update food"}), 500
+
+    finally:
+        session.close()
+
+
 @app.post("/foods")
 def add_food():
     data = request.json or {} # pokud tam nic nění dej to empty; bere to data z toh orequestu...překvapivě
