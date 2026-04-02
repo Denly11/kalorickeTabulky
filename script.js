@@ -20,18 +20,19 @@ renderDay();
 */
 //  tohle vše dohromady 
 //  v
-init();
 
 API_BASE = "http://localhost:5000"
 USER_ID = 1
 
+init();
 //eventy
 addButton.addEventListener("click", addFood);
 btnPrevDay.addEventListener("click", () => dayShift(-1));
 btnNextDay.addEventListener("click", () => dayShift(1));
 
 
-function addFood() 
+
+async function addFood() 
 {
   const name = document.getElementById("food").value.trim();//trim odstraní mezery na začátku a konci
   const kcal = Number(document.getElementById("kcal").value);
@@ -43,12 +44,27 @@ function addFood()
     }    
   
 
+  /*  --objekt days už tak uplně nebude "tady" na local
   if (!days[date]) //pokud neexistuje den v objektu days
     {
       days[date] = { foods: [] }; //vytvoří se nový den s prázdným polem foods
     } 
- 
+ */
 
+  const isEditing = editIndex !== null;//udělám pr. isEditing ve které je editIndex který má hodnotu null[JE PRÁZDNÝ] takže isEditing je False, POKUD ALE najednou nějakou hodnotu má, is editing je True => pokud v edit indexu něco je isEditing je tru, vlasně to z nekonečna stavů editIndex dělá binární stav(T/F)
+  const foodToEdit = isEditing ? days[date].foods[editIndex] : null;//v days z proměné date vem foods a z toho položku na pozici inddex
+  //když tam něco je a má to shodný index tak to jde editovat...
+
+  const url = isEditing
+    ? `${API_BASE}/foods/${foodToEdit.id}` //payload bude editovat již ex.
+    : `${API_BASE}/foods`;//payload bude nová položka
+    //pokud se needituje tak je to null => False => url je 
+
+    const method = isEditing ? "PUT" : "POST";//pokud je isEditing True tak method = PUT
+
+    const payload = isEditing ? {name, kcal, date} : {user_id: USER_ID, name, kcal, date}//pokud to něexistuje tak to musíme připsat k uživately
+
+/*
   if (editIndex !== null) //pokud je editIndex nastavený, upravíme existující jídlo
   {
     days[date].foods[editIndex] = { name, kcal };
@@ -57,15 +73,28 @@ function addFood()
   else //jinak přidáme nové jídlo
   {
     days[date].foods.push({ name, kcal });
-  }
+  }*/
 
-  saveDays();
-  renderDay();
+    const response = await fetch(url, {method, headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload)});
 
+    if (!response.ok)
+    {
+      alert("Nepovedlo se uložot jídlo.")
+      return;
+    }
+
+  // saveDays();
+  // renderDay();
+
+  editIndex = null;
   document.getElementById("food").value = "";//čístí input boxy
   document.getElementById("kcal").value = "";
-  
+
+  await loadFoodsForDate(date);
+  renderDay();
 }
+
+
 
 function renderDay()
 {
@@ -167,7 +196,7 @@ function saveDays()
 {
   localStorage.setItem("days", JSON.stringify(days));
 }
- */
+*/
 
 /*function loadDays()
 {
@@ -226,7 +255,7 @@ async function init()
   {
     updateDateDisplay();
     await loadFoodsForDate(date);
-    rendarDay();
+    renderDay();
   }
   catch (error)
   {
