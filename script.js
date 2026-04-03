@@ -53,7 +53,7 @@ async function addFood()
 
   const isEditing = editIndex !== null;//udělám pr. isEditing ve které je editIndex který má hodnotu null[JE PRÁZDNÝ] takže isEditing je False, POKUD ALE najednou nějakou hodnotu má, is editing je True => pokud v edit indexu něco je isEditing je tru, vlasně to z nekonečna stavů editIndex dělá binární stav(T/F)
   const foodToEdit = isEditing ? days[date].foods[editIndex] : null;//v days z proměné date vem foods a z toho položku na pozici inddex
-  //když tam něco je a má to shodný index tak to jde editovat...
+  //když tam něco je a má to shodný index tak to jde editovat..., index je index v v objektu days, v dys se vytváří objekty dle datumů, a v každém datumu(objektu) jsou položky(jádla) 0 až ...9999999
 
   const url = isEditing
     ? `${API_BASE}/foods/${foodToEdit.id}` //payload bude editovat již ex.
@@ -121,7 +121,7 @@ function renderDay()
           btnEdit.textContent = "✏️";
           btnEdit.onclick = function()
            {
-            editFood(index);
+            editFood(index);//*** s tím se zvolí PUT a jedem-
            }
 
           li.appendChild(btnEdit);//přidá tlačítko do li
@@ -141,7 +141,7 @@ function removeFood(index)
   renderDay();
 }
 
-function editFood(index)
+function editFood(index)//tady je index z toho konkrétného buttonu pro to konkrétní jídlo v tom konkrétním dnu OOHHHH označeno ***
 {
   const food = days[date].foods[index];
 
