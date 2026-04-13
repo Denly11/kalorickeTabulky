@@ -3,7 +3,7 @@ from flask_cors import CORS
 from database import engine, SessionLocal
 from models import Base, Food, User
 from datetime import datetime
-
+from . import crud
 
 app = Flask(__name__)#instance celé aplikace, name je promenná pro referenci na nazev programu co zrovna spouštíš(main/"název")
 CORS(app)#browser má same‑origin policy - může si číst odpovědi jen z téhle stejné trojice "věcí" idk, Origin = protokol + host + port(http://localhost:3000), CORS umožňuje nastavit, že i z jiného originu(http://localhost:5173) může přistupovat k API, prostě skupina důvěryhodných zdrojů, porty jsou kamarádi a felí spolu
@@ -39,31 +39,39 @@ def get_foods():
 
     session = SessionLocal()
     try:
-        foods = (#list
-            session.query(Food)#v session query na databazi a vrátí mi to Food objekty + filtry
-            .filter(Food.user_id == user_id, Food.date == target_date)# Food user id ==...,datum ==...
-            .order_by(Food.id.asc())# seřad od nejmenšího id po nejvyšší
-            .all()#spust a vykonej
-        )#SQLAlchemy objekt, python list vytvořený z db dat
+        foods = crud.get_foods_by_date_and_user(
+            db=session,
+            user_id=user_id,
+            target_date=target_date
+        )
+    finally:
+            session.close()
+           
+            #předtím v tom try bylo tohle a i to foods_json
+        # foods = (#list
+            # session.query(Food)#v session query na databazi a vrátí mi to Food objekty + filtry
+            # .filter(Food.user_id == user_id, Food.date == target_date)# Food user id ==...,datum ==...
+            # .order_by(Food.id.asc())# seřad od nejmenšího id po nejvyšší
+            # .all()#spust a vykonej
+        #)SQLAlchemy objekt, python list vytvořený z db dat
+      
 
-        foods_json =[#list pole, tady vezmu data z foods a udělám z nich json friendly formát
-            {
-                "id": food.id,#vytvoření klíče
-                "user_id": food.user_id,
-                "name": food.name,
-                "kcal": food.kcal,
-                "date": food.date.isoformat(),
-            }
-            for food in foods
-        ]   
+    foods_json =[#list pole, tady vezmu data z foods a udělám z nich json friendly formát
+                {
+                    "id": food.id,#vytvoření klíče
+                    "user_id": food.user_id,
+                    "name": food.name,
+                    "kcal": food.kcal,
+                    "date": food.date.isoformat(),
+                }
+                for food in foods
+    ]   
             #bere z toho foods ty položky a přvadí jejich infa do jsonu
             #každý prvek ve foods je food, pro každou položku ve foods, každéé food je jedno jídlo...
 
         #odpověd
-        return jsonify({"foods": foods_json, "count": len(foods_json)}), 200
+    return jsonify({"foods": foods_json, "count": len(foods_json)}), 200
 
-    finally:
-        session.close()
 
 
 
