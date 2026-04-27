@@ -79,18 +79,23 @@ def get_foods():
 def delete_food(food_id):
     session = SessionLocal()
     try:
-        food = session.get(Food, food_id)#hledání v Food podle primárního klíče; pk lookup
+        # food = session.get(Food, food_id)#hledání v Food podle primárního klíče; pk lookup
+        food = crud.delete_food_by_Id(db=session, food_id=food_id)
+
     
         if not food:#pokud není, nenašlo se
             return jsonify({"error": "Food not found"}), 404
 
-        session.delete(food)
-        session.commit()
+        # session.delete(food)
+        # session.commit() 
+        #díky separation of conceptrs do crud.py iž není potřeba je to v delete_food_by...
+
 
         return jsonify({"status": "ok", "deleted_food_id": food_id}), 200
 
-    except Exception:#obecná třída chyb, ne že by ses něco něnašlo, ale něco se rozhodně pokazilo
-        session.rollback()
+    except Exception as e:#do e ulož ten fail(pak ho vypíšu) je obecná třída chyb, ne že by ses něco něnašlo, ale něco se rozhodně pokazilo
+        session.rollback()#protějšk .commit nepotvrdí změnu
+        print(f"Error deleting food: {e}")
         return jsonify({"error": "Failed to delete food"}), 500
 
     finally:
@@ -98,36 +103,31 @@ def delete_food(food_id):
 
 
 @app.put("/foods/<int:food_id>")  #edit
-def edit_food(food_id):
-    data = request.json or {}
-    name = data.get("name")
-    kcal = data.get("kcal")
-    date_str = data.get("date")
 
-    if not name or not kcal or not date_str:
-        return jsonify({"error": "Missing required fields"}), 400
+def edit_food(food_id):
+    data = request.get_json()
+
+    if not data or not all(k in data for k in ["name", "kcal", "date"]):#k in data for k in je(generovaná notace) vlasně to vždy pod ka vezmě jeden z těch prvku pole a zkontroluje jestli je ten prvek v datech a když se tam najde jde na další(name, kcal, ...) a když to vše vrátí True... 
+        return jsonify({"error": "Missing data for name, kcal, date"}), 400
 
     try:
-        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        target_date = datetime.strptime(data["date"], "%Y-%m-%d").date()
     except ValueError:
         return jsonify({"error": "Invalid date format, use YYYY-MM-DD"}), 400
 
     session = SessionLocal()
     try:
-        food = session.get(Food, food_id)   #sqlalchemy request na db
+
+        food = crud.edit_food_by_Id(db=session, food_id = food_id, name = data["name"], kcal = data["kcal"], target_date= target_date)
 
         if not food:
             return jsonify({"error": "Food not found"}), 404
 
-        food.name = name
-        food.kcal = kcal
-        food.date = target_date
-        session.commit()
-
         return jsonify({"status": "ok", "food_id": food.id}), 200
 
-    except Exception:
+    except Exception as e:
         session.rollback()
+        print(f"Error editing food: {e}")
         return jsonify({"error": "Failed to update food"}), 500
 
     finally:
@@ -136,28 +136,23 @@ def edit_food(food_id):
 
 @app.post("/foods")
 def add_food():
-    data = request.json or {} # pokud tam nic nění dej to empty; bere to data z toh orequestu...překvapivě
-    user_id = data.get("user_id", 1)#pokud není, hodnota je 
-    name = data.get("name")
-    kcal = data.get("kcal")
-    date_str = data.get("date")
+    data = request.get_json()#když to tam není dá do proměnné NULL
 
-    if not name or not kcal or not date_str:
-        return jsonify({"error": "Missing required fields"}), 400
+    if not data or not all(k in data for k in ["name", "kcal", "date", "user_id"]):
+        return jsonify({"error": "Missing data for name, kcal, date, or user_id"}), 400
 
     try:
-        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()#text datumu převeden do .date
+        target_date = datetime.strptime(data["date"], "%Y-%m-%d").date()#text datumu převeden do .date
     except ValueError:
         return jsonify({"error": "Invalid date format, use YYYY-MM-DD"}), 400
 
     session = SessionLocal()
     try:
-        food = Food(user_id=user_id, name=name, kcal=kcal, date=target_date)
-        session.add(food)
-        session.commit()
+        food = crud.create_food(db= session, user_id=data["user_id"],name=data["name"],kcal=data["kcal"],target_date=target_date)
         return jsonify({"status": "ok", "food_id": food.id}), 201
-    except Exception:
+    except Exception as e:
         session.rollback()
+        print(f"Error creating food: {e}")
         return jsonify({"error": "Failed to create food"}), 500
     finally:
         session.close()
