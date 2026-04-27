@@ -55,3 +55,7 @@ Při návrhu řešení vždy dodržuj tuto strukturu:
 *   [ ] **Refactoring: Přechod z localStorage na API** (Aktuální Priorita).
     *   Backend: Implementace GET, DELETE, PUT endpointů.
     *   Frontend: Implementace `fetch()` volání místo přímé manipulace pole `days`.
+*   [ ] **Architektura: Normalizace databáze (Škálovatelnost):**
+    *   Oddělit "slovník jídel" od "záznamů o konzumaci". Místo ukládání názvu a kalorií pro každý záznam znovu a znovu, vytvořit dvě tabulky:
+        1.  `foods_dictionary`: Unikátní jídla (název, kcal).
+        2.  `food_logs`: Záznamy, které odkazují na `user_id` a `food_id` ze slovníku, a obsahují specifika jako datum a množství.
