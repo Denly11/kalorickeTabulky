@@ -60,7 +60,7 @@ async function addFood()
     : `${API_BASE}/foods`;//payload bude nová položka
     //pokud se needituje tak je to null => False => url je 
 
-    const method = isEditing ? "PUT" : "POST";//pokud je isEditing True tak method = PUT
+    const method = isEditing ? "PUT" : "POST";//pokud je isEditing True tak method = PUT, PUT je v app.py edit že jo ooooooo
 
     const payload = isEditing ? {name, kcal, date} : {user_id: USER_ID, name, kcal, date}//pokud to něexistuje tak to musíme připsat k uživately
 
@@ -111,17 +111,17 @@ function renderDay()
           li.textContent = `${food.name} - ${food.kcal} kcal`;
           
           const btnRemove = document.createElement("button");//tlačítko pro smazání
-          btnRemove.textContent = "❌";
+          btnRemove.textContent = "delete";
           btnRemove.onclick = function()
            {
-            removeFood(index);
+            removeFood(food.id);
            }
 
           const btnEdit = document.createElement("button");//tlačítko pro úpravu
-          btnEdit.textContent = "✏️";
+          btnEdit.textContent = "edit";
           btnEdit.onclick = function()
            {
-            editFood(index);//*** s tím se zvolí PUT a jedem-
+            editFood(food.id);//*** s tím se zvolí PUT a jedem-
            }
 
           li.appendChild(btnEdit);//přidá tlačítko do li
@@ -134,22 +134,55 @@ function renderDay()
   document.getElementById("total").textContent = total;
 }
 
-function removeFood(index)
+async function removeFood(foodId)
 {
-  days[date].foods.splice(index, 1); //odstraní jídlo na daném indexu
-  saveDays();
-  renderDay();
+  if (!confirm("Opravdu chcete smazat toto jídlo?")) {
+    return; //kontrola že user chce fakt smazat položku, pokud to je že ne(false) tak se vykoná return a nic se nestane obv...
+  }
+  try {
+      
+      const response = await fetch(`${API_BASE}/foods/${foodId}`, {
+        method: "DELETE",//dekoratoy jsem upravoval delete, put apodobně takže tay jen říkám co z toho vybrat
+      });
+
+   
+      if (!response.ok) {
+        
+        alert("Nepovedlo se smazat jídlo.");
+        return;
+      }
+
+      // 4. Pokud bylo smazání úspěšné, synchronizujeme frontend
+      // Znovu načteme aktuální data pro daný den z backendu...
+      await loadFoodsForDate(date);
+      // ...a překreslíme zobrazení
+      renderDay();
+
+    } catch (error) {
+      // 5. Zachytíme případné chyby sítě
+      console.error("Chyba při mazání jídla:", error);
+      alert("Nastala chyba při komunikaci se serverem.");
+    }
+
 }
 
-function editFood(index)//tady je index z toho konkrétného buttonu pro to konkrétní jídlo v tom konkrétním dnu OOHHHH označeno ***
-{
-  const food = days[date].foods[index];
 
-  document.getElementById("food").value = food.name;
+function editFood(foodId)//tady je index z toho konkrétného buttonu pro to konkrétní jídlo v tom konkrétním dnu OOHHHH označeno ***
+{
+  const food = days[date].foods.find(food => food.id === foodId);//je food.id v foos z toho dne = tomu co je ve funkci, pokud jo máme to jídlo
+  const foundFoodId = days[date].foods.findIndex(food => food.id === foodId)
+
+  if (!food) {
+    alert("Chyba: Jídlo pro úpravu nebylo nalezeno.");
+    return;
+  }
+
+  document.getElementById("food").value = food.name;//to v index má hodnoty odtud
   document.getElementById("kcal").value = food.kcal;
 
-  editIndex = index;
+  editIndex = foundFoodId;
 }
+
 
 function getToday()
 {
