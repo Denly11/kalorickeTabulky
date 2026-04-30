@@ -50,20 +50,17 @@ Při návrhu řešení vždy dodržuj tuto strukturu:
 
 ## 📍 Aktuální Fáze Vývoje (Status)
 
-*   [x] Základní HTML/CSS/JS frontend (localStorage).
-*   [x] Základní Flask backend + PostgreSQL connection.
-*   [x] **Refactoring: Přechod z localStorage na API**.
-    *   Backend: Implementace GET, DELETE, PUT endpointů.
-    *   Frontend: Implementace `fetch()` volání místo přímé manipulace pole `days`.
-*   [ ] **Architektura: Normalizace databáze (Škálovatelnost) — Aktuální priorita:**
-    *   Oddělit "slovník jídel" od "záznamů o konzumaci". Místo ukládání názvu a kalorií pro každý záznam znovu a znovu, vytvořit dvě tabulky:
-        1.  `foods_dictionary`: Unikátní jídla (název, kcal).
-        2.  `food_logs`: Záznamy, které odkazují na `user_id` a `food_id` ze slovníku, a obsahují specifika jako datum a gramáž.
-    *   **Roadmapa normalizace (konkrétně):**
-        1.  `models.py` — přidat `FoodDefinition`, upravit `Food` na log a vazby.
-        2.  `crud.py` — nové CRUD pro definice, upravit dotazy logů.
-        3.  `app.py` — nové endpointy/payloady, výpočet kcal v odpovědi.
-        4.  `script.js` — nové API volání pro slovník, gramy a tok přidání logu.
-        5.  `index.html` + `style.css` — UI pro výběr/autocomplete + gramy.
-        6.  Data: staré záznamy smazat a jet čistě na novém modelu.
-        7.  `README.md` + `AI_PROJECT_CONTEXT.md` — update dokumentace.
+*   [x] Základní HTML/CSS/JS frontend (původně s `localStorage`).
+*   [x] Základní Flask backend + PostgreSQL připojení.
+*   [x] **Architektura: Normalizace databáze a kompletní refaktoring.**
+    *   **Cíl splněn:** Databáze byla úspěšně normalizována. Místo jednoho velkého záznamu nyní máme oddělený slovník jídel (`food_library`) a deník konzumace (`foods`), což eliminuje redundanci dat.
+    *   **Backend:** Kompletně přepsány `models.py`, `crud.py` a `app.py` pro práci s novým schématem. Vytvořeny nové API endpointy.
+    *   **Frontend:** Kompletně přepsán `script.js`. Aplikace nyní komunikuje výhradně přes API, načítá data z backendu a dynamicky generuje UI. Původní `localStorage` logika byla zcela odstraněna.
+    *   **UI:** Textové pole pro jídlo bylo nahrazeno `<select>` prvkem, který se plní daty z `food_library`.
+
+*   [ ] **Další kroky:**
+    *   Implementace zbývajících CRUD operací (DELETE, PUT).
+    *   Vylepšení UI/UX (např. lepší feedback pro uživatele, správa chyb).
+    *   Zvážení přechodu na React/Vite pro frontend.
+    *   Zvážení přechodu na FastAPI pro backend.
+    *   Nasazení aplikace (Docker, Linux server).
