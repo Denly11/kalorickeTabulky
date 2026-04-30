@@ -65,5 +65,5 @@ Při návrhu řešení vždy dodržuj tuto strukturu:
         3.  `app.py` — nové endpointy/payloady, výpočet kcal v odpovědi.
         4.  `script.js` — nové API volání pro slovník, gramy a tok přidání logu.
         5.  `index.html` + `style.css` — UI pro výběr/autocomplete + gramy.
-        6.  `README.md` + `AI_PROJECT_CONTEXT.md` — update dokumentace.
-        7.  Data: staré záznamy smazat a jet čistě na novém modelu.
+        6.  Data: staré záznamy smazat a jet čistě na novém modelu.
+        7.  `README.md` + `AI_PROJECT_CONTEXT.md` — update dokumentace.

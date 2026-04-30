@@ -16,8 +16,13 @@
     <h2>Celkem: <span id="total">0</span> kcal</h2>
 
     <div>
-      <input id="food" placeholder="Jídlo">
-      <input id="kcal" type="number" placeholder="Kalorie">
+      <select id="foodSelect">
+        <option value='{"name": "Jablko", "kcal_per_100grams": 52}'>Jablko</option>
+        <option value='{"name": "Kuřecí prsa", "kcal_per_100grams": 165}'>Kuřecí prsa</option>
+        <option value='{"name": "Rýže", "kcal_per_100grams": 130}'>Rýže (vařená)</option>
+        <option value='{"name": "Chléb", "kcal_per_100grams": 265}'>Chléb</option>
+      </select>
+      <input id="grams" type="number" placeholder="Gramy">
       <button id="addButton">Přidat</button>
     </div>
 

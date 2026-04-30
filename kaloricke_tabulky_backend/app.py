@@ -29,23 +29,22 @@ def get_foods():
    
     try:
         user_id = int(user_id_str)
-    except ValueError:
-        return jsonify({"error": "user_id must be integer"}), 400
-
-    try:
-        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()#datum ve formě datumu, už ne textu
-    except ValueError:
-        return jsonify({"error": "Invalid date format, use YYYY-MM-DD"}), 400
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return jsonify({"error": "Invalid user_id or date format"}), 400
 
     session = SessionLocal()
     try:
-        foods = crud.get_foods_by_date_and_user(
+        # Voláme novou funkci, která vrací seznam záznamů (logů)
+        food_logs = crud.get_food_logs_by_date(
             db=session,
             user_id=user_id,
             target_date=target_date
         )
-    finally:
-            session.close()
+            #session.close() tady tu session nezavíram protože to předtím byla nahoda že to pořád odkazovalo(food.x), 
+            # ted potřebuju něco řemu se říká sdílený atribut, 
+            # což je to definovaná pomocí relationshit() a 
+
            
             #předtím v tom try bylo tohle a i to foods_json
         # foods = (#list
@@ -56,42 +55,44 @@ def get_foods():
         #)SQLAlchemy objekt, python list vytvořený z db dat
       
 
-    foods_json =[#list pole, tady vezmu data z foods a udělám z nich json friendly formát
-                {
-                    "id": food.id,#vytvoření klíče
-                    "user_id": food.user_id,
-                    "name": food.name,
-                    "kcal": food.kcal,
-                    "date": food.date.isoformat(),
-                }
-                for food in foods
-    ]   
-            #bere z toho foods ty položky a přvadí jejich infa do jsonu
-            #každý prvek ve foods je food, pro každou položku ve foods, každéé food je jedno jídlo...
+        foods_json =[]#list pole, tady vezmu data z foods a udělám z nich json friendly formát
+        for log in food_logs:
+            # Pro každý záznam (log) dopočítáme kalorie
+            calculated_kcal = round((log.food_item.kcal_per_100grams / 100) * log.grams)
+            
+            foods_json.append({
+                "id": log.id, # ID samotného záznamu (pro mazání/úpravy)
+                "date": log.date.isoformat(),
+                "grams": log.grams,
+                "name": log.food_item.name, # Jméno bereme z připojeného slovníku
+                "kcal": calculated_kcal, # Posíláme dopočítané kalorie
+                "food_library_id": log.food_library_id
+            })
+            
+        return jsonify({"foods": foods_json, "count": len(foods_json)}), 200
 
-        #odpověd
-    return jsonify({"foods": foods_json, "count": len(foods_json)}), 200
+    finally:
+        session.close()
 
 
+@app.delete("/foods/<int:food_log_id>")
+def delete_food(food_log_id):
 
+    user_id = 1# zatím není hotové přihlášení takže
 
-@app.delete("/foods/<int:food_id>")
-def delete_food(food_id):
     session = SessionLocal()
     try:
-        # food = session.get(Food, food_id)#hledání v Food podle primárního klíče; pk lookup
-        food = crud.delete_food_by_Id(db=session, food_id=food_id)
+        # Voláme novou CRUD funkci pro mazání záznamu
+        deleted_log = crud.delete_food_log(
+            db=session,
+            food_log_id=food_log_id,
+            user_id=user_id # Předáváme ID uživatele pro bezpečnostní kontrolu
+        )
 
-    
-        if not food:#pokud není, nenašlo se
-            return jsonify({"error": "Food not found"}), 404
+        if not deleted_log:
+            return jsonify({"error": "Food log not found or you don't have permission to delete it"}), 404
 
-        # session.delete(food)
-        # session.commit() 
-        #díky separation of conceptrs do crud.py iž není potřeba je to v delete_food_by...
-
-
-        return jsonify({"status": "ok", "deleted_food_id": food_id}), 200
+        return jsonify({"status": "ok", "deleted_food_id": food_log_id}), 200
 
     except Exception as e:#do e ulož ten fail(pak ho vypíšu) je obecná třída chyb, ne že by ses něco něnašlo, ale něco se rozhodně pokazilo
         session.rollback()#protějšk .commit nepotvrdí změnu
@@ -102,29 +103,46 @@ def delete_food(food_id):
         session.close()
 
 
-@app.put("/foods/<int:food_id>")  #edit
+@app.put("/foods/<int:food_log_id>")  #edit
 
-def edit_food(food_id):
+def edit_food(food_log_id):
     data = request.get_json()
 
-    if not data or not all(k in data for k in ["name", "kcal", "date"]):#k in data for k in je(generovaná notace) vlasně to vždy pod ka vezmě jeden z těch prvku pole a zkontroluje jestli je ten prvek v datech a když se tam najde jde na další(name, kcal, ...) a když to vše vrátí True... 
-        return jsonify({"error": "Missing data for name, kcal, date"}), 400
+    #NECHÁM TO TU KVŮLI VYSVĚTLENÍ SYNTAXE TÝHLE VĚCI
+    #
+    # if not data or not all(k in data for k in ["name", "kcal", "date"]):#k in data for k in je(generovaná notace) vlasně to vždy pod ka vezmě jeden z těch prvku pole a zkontroluje jestli je ten prvek v datech a když se tam najde jde na další(name, kcal, ...) a když to vše vrátí True... 
+    
+
+    user_id = 1 # Opět napevno, dokud nebude přihlašování
+
+    # 1. Validace: Očekáváme z frontendu pouze novou gramáž
+    if not data or "grams" not in data:
+        return jsonify({"error": "Missing 'grams' in request body"}), 400
 
     try:
-        target_date = datetime.strptime(data["date"], "%Y-%m-%d").date()
-    except ValueError:
-        return jsonify({"error": "Invalid date format, use YYYY-MM-DD"}), 400
+        grams = int(data["grams"])
+        if grams <= 0:
+            raise ValueError("Grams must be a positive number")
+    except (ValueError, TypeError):
+        return jsonify({"error": "Invalid data type or value for 'grams'"}), 400
 
+    # 2. Práce s databází
     session = SessionLocal()
     try:
+        # Voláme novou CRUD funkci pro úpravu záznamu
+        updated_log = crud.update_food_log(
+            db=session,
+            food_log_id=food_log_id,
+            user_id=user_id,
+            grams=grams
+        )
 
-        food = crud.edit_food_by_Id(db=session, food_id = food_id, name = data["name"], kcal = data["kcal"], target_date= target_date)
+        if not updated_log:
+            return jsonify({"error": "Food log not found or you don't have permission to edit it"}), 404
 
-        if not food:
-            return jsonify({"error": "Food not found"}), 404
-
-        return jsonify({"status": "ok", "food_id": food.id}), 200
-
+        # 3. Odeslání úspěšné odpovědi
+        return jsonify({"status": "ok", "updated_food_log_id": updated_log.id}), 200
+    
     except Exception as e:
         session.rollback()
         print(f"Error editing food: {e}")
@@ -138,25 +156,49 @@ def edit_food(food_id):
 def add_food():
     data = request.get_json()#když to tam není dá do proměnné NULL
 
-    if not data or not all(k in data for k in ["name", "kcal", "date", "user_id"]):
-        return jsonify({"error": "Missing data for name, kcal, date, or user_id"}), 400
+    
+    # 1. Validace vstupních dat z frontendu
+    required_keys = ["user_id", "date", "name", "kcal_per_100grams", "grams"]
+    if not data or not all(k in data for k in required_keys):
+        return jsonify({"error": f"Missing data, required keys are: {required_keys}"}), 400
 
     try:
-        target_date = datetime.strptime(data["date"], "%Y-%m-%d").date()#text datumu převeden do .date
-    except ValueError:
-        return jsonify({"error": "Invalid date format, use YYYY-MM-DD"}), 400
+        user_id = int(data["user_id"])
+        kcal_per_100grams = int(data["kcal_per_100grams"])
+        grams = int(data["grams"])
+        target_date = datetime.strptime(data["date"], "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return jsonify({"error": "Invalid data type for user_id, kcal, grams or date"}), 400
 
+    # 2. Práce s databází
     session = SessionLocal()
     try:
-        food = crud.create_food(db= session, user_id=data["user_id"],name=data["name"],kcal=data["kcal"],target_date=target_date)
-        return jsonify({"status": "ok", "food_id": food.id}), 201
+        # Krok 2a: Získáme položku ze slovníku (nebo ji vytvoříme)
+        food_item = crud.get_or_create_food_library_item(
+            db=session,
+            name=data["name"],
+            kcal_per_100grams=kcal_per_100grams,
+            owner_id=user_id  # Propojíme s uživatelem, který jídlo vytvořil
+        )
+
+        # Krok 2b: Vytvoříme samotný záznam o konzumaci
+        new_log = crud.create_food_log(
+            db=session,
+            user_id=user_id,
+            food_library_id=food_item.id,  # Použijeme ID z kroku 2a
+            grams=grams,
+            target_date=target_date
+        )
+        
+        # 3. Odeslání úspěšné odpovědi
+        return jsonify({"status": "ok", "food_log_id": new_log.id}), 201
+
     except Exception as e:
         session.rollback()
-        print(f"Error creating food: {e}")
-        return jsonify({"error": "Failed to create food"}), 500
+        print(f"Error creating food log: {e}")
+        return jsonify({"error": "Failed to create food log"}), 500
     finally:
         session.close()
-
     
 
 
