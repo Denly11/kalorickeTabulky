@@ -52,10 +52,18 @@ Při návrhu řešení vždy dodržuj tuto strukturu:
 
 *   [x] Základní HTML/CSS/JS frontend (localStorage).
 *   [x] Základní Flask backend + PostgreSQL connection.
-*   [ ] **Refactoring: Přechod z localStorage na API** (Aktuální Priorita).
+*   [x] **Refactoring: Přechod z localStorage na API**.
     *   Backend: Implementace GET, DELETE, PUT endpointů.
     *   Frontend: Implementace `fetch()` volání místo přímé manipulace pole `days`.
-*   [ ] **Architektura: Normalizace databáze (Škálovatelnost):**
+*   [ ] **Architektura: Normalizace databáze (Škálovatelnost) — Aktuální priorita:**
     *   Oddělit "slovník jídel" od "záznamů o konzumaci". Místo ukládání názvu a kalorií pro každý záznam znovu a znovu, vytvořit dvě tabulky:
         1.  `foods_dictionary`: Unikátní jídla (název, kcal).
-        2.  `food_logs`: Záznamy, které odkazují na `user_id` a `food_id` ze slovníku, a obsahují specifika jako datum a množství.
+        2.  `food_logs`: Záznamy, které odkazují na `user_id` a `food_id` ze slovníku, a obsahují specifika jako datum a gramáž.
+    *   **Roadmapa normalizace (konkrétně):**
+        1.  `models.py` — přidat `FoodDefinition`, upravit `Food` na log a vazby.
+        2.  `crud.py` — nové CRUD pro definice, upravit dotazy logů.
+        3.  `app.py` — nové endpointy/payloady, výpočet kcal v odpovědi.
+        4.  `script.js` — nové API volání pro slovník, gramy a tok přidání logu.
+        5.  `index.html` + `style.css` — UI pro výběr/autocomplete + gramy.
+        6.  `README.md` + `AI_PROJECT_CONTEXT.md` — update dokumentace.
+        7.  Data: staré záznamy smazat a jet čistě na novém modelu.
