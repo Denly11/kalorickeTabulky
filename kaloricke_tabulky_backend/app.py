@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from database import engine, SessionLocal
-from models import Base, Food, User
+from .database import engine, SessionLocal
+from .models import Base, Food, User
 from datetime import datetime
 from . import crud
 

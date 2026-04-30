@@ -1,7 +1,7 @@
 from datetime import date
 from sqlalchemy import Integer, String, Date, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from database import Base#z toho souboru
+from .database import Base#z toho souboru
 
 #tabulka uživatelů
 class User(Base): # User dědí z Base → SQLAlchemy ví, že je to tabulka
